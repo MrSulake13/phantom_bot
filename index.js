@@ -4,7 +4,6 @@ const bot = new Discord.Client({
 });
 const config = require('./settings.json');
 const mongoose = require('mongoose');
-const { loadCommands } = require('./utils/loadCommands');
 const mongoCurrency = require('discord-mongo-currency');
 const Levels = require('discord-xp');
 
@@ -14,14 +13,12 @@ mongoose.set('useFindAndModify', false);
 mongoCurrency.connect(config.MongoDB);
 Levels.setURL("mongodb+srv://Andrey:nrLdm6MqJF6ILdFi@personalbot.gkzwl.mongodb.net/DataBase");
 
-require('./utils/loadEvents')(bot);
-
-bot.commands = new Discord.Collection();
 bot.aliases = new Discord.Collection();
 bot.snipes = new Map()
 
-loadCommands(bot);
-
+bot.on("ready", bot => {
+  console.log('The Bot is Online!')
+})
 
 bot.on("message", async message => {
     const user = await Levels.fetch(message.author.id, message.guild.id);
