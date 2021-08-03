@@ -1,766 +1,212 @@
-const Discord = require('discord.js');
-const bot = new Discord.Client();
-const Levels = require('discord-xp');
-const mongoose = require('mongoose');
-
-Levels.setURL("mongodb+srv://Andrey:nrLdm6MqJF6ILdFi@personalbot.gkzwl.mongodb.net/DataBase");
-
-bot.on("ready", bot => {
-  console.log('The Bot is Online!')
-})
-
-bot.on("message", async message => {
-  if (!message.guild) return;
-  if (message.author.bot) return;
-
-  const prefix = '!';
-
-  const args = message.content.slice(prefix.length).trim().split(/ +/g);
-  const command = args.shift().toLowerCase();
-  const user = await Levels.fetch(message.author.id, message.guild.id);
-
-  const randomXp = Math.floor(Math.random() * 9) + 1; //Random amont of XP until the number you want + 1
-  const hasLeveledUp = await Levels.appendXp(message.author.id, message.guild.id, randomXp);
-
-  if(hasLeveledUp) {
-    const MessageEmbed = require('discord.js');
-      
-    const embedlvl = new Discord.MessageEmbed()
-      .setTitle(`🥳 Level Up!`)
-      .setDescription(`Congratulations ${message.author}!\nYou have advanced to **Level ${user.level + 1}**!`)
-      .setThumbnail(`${message.author.displayAvatarURL()}`)
-      .setColor(`GREEN`)
-      .setTimestamp()
-      .setFooter(message.guild.name, message.guild.iconURL())
-      return message.channel.send(embedlvl);
-
-  };
-
-
-
-
-  //Help
-  if(command === "help") {
-    const MessageEmbed = require('discord.js');
-    const embedhelp = new Discord.MessageEmbed()
-    .setTitle(`Support Category`)
-    .addFields(
-      { name: `🛠️ Moderation`, value: `!help-moderation`, inline: true },
-      { name: `📩 Support`, value: `!help-support`, inline: true },
-      { name: `😂 Fun Commands`, value: `!help-fun`, inline: true },
-      { name: `👛 Leveling System`, value: `!help-levels`, inline: true },
-      { name: `✅ Status`, value: `!status`, inline: true },
-      { name: `💓 Ping`, value: `!ping`, inline: true }
-    )
-    .setDescription(`Please remember that this bot is updated daily and sometimes the commands may not work or have a big delay. You can always check the bot's status on our discord server and always be up to date. **Discord Server:** https://discord.io/phantomcom`)
-    .setColor(`BLUE`)
-    return message.channel.send(embedhelp);
-    
-  };
-
-
-
-  if(command === "help-moderation") {
-    const MessageEmbed = require('discord.js');
-    const embedhelp = new Discord.MessageEmbed()
-    .setTitle(`Support Category`)
-    .addFields(
-      { name: `⛔ Ban`, value: `!ban [user] [time] [reason]`, inline: true },
-      { name: `🥾 Kick`, value: `!kick [user] [reason]`, inline: true },
-      { name: `🔇 Mute`, value: `!mute [user] [time] [reason]`, inline: true },
-      { name: `🔊 Unmute`, value: `!unmute [user]`, inline: true },
-      { name: `❌ Warn`, value: `!warn [user] [reason]`, inline: true },
-      { name: `👍🏼 Unwarn`, value: `!unwarn [user] [warnid]`, inline: true }
-    )
-    .setDescription(`Here are all the moderation commands for the bot. The usage of them in under the function name.`)
-    .setColor(`RED`)
-    return message.channel.send(embedhelp);    
-  };
-
-
-
-  if(command === "help-support") {
-    const MessageEmbed = require('discord.js');
-    const embedhelp = new Discord.MessageEmbed()
-    .setTitle(`Support Category`)
-    .addFields(
-      { name: `⛔ Ban`, value: `!ban [user] [time] [reason]`, inline: true },
-      { name: `🥾 Kick`, value: `!kick [user] [reason]`, inline: true },
-      { name: `🔇 Mute`, value: `!mute [user] [time] [reason]`, inline: true },
-      { name: `🔊 Unmute`, value: `!unmute [user]`, inline: true },
-      { name: `❌ Warn`, value: `!warn [user] [reason]`, inline: true },
-      { name: `👍🏼 Unwarn`, value: `!unwarn [user] [warnid]`, inline: true }
-    )
-    .setDescription(`Here are all the moderation commands for the bot. The usage of them in under the function name.`)
-    .setColor(`RED`)
-    return message.channel.send(embedhelp);    
-  };
-
-
-
-  if(command === "help-fun") {
-    const MessageEmbed = require('discord.js');
-    const embedhelp = new Discord.MessageEmbed()
-    .setTitle(`Support Category`)
-    .addFields(
-      { name: `💬 Say`, value: `!say [message]`, inline: true },
-      { name: `👛 Coinflip`, value: `!coinflip`, inline: true },
-      { name: `😡 Roast`, value: `!roast [user]`, inline: true },
-      { name: `👴🏼 Urban`, value: `!urban [word]`, inline: true },
-      { name: `🙌🏼 Motivate`, value: `!motivate [user/none]`, inline: true },
-      { name: `🧮 Calculator`, value: `!calculate [ecuation]`, inline: true },
-      { name: `🐸 Meme`, value: `!meme`, inline: true },
-      { name: `🖼️ Avatar`, value: `!avatar [user]`, inline: true },
-      { name: `🟠 Ph Comment`, value: `!phcom [user/none] [text]`, inline: true },
-    )
-    .setDescription(`Here are all the fun commands for the bot. The usage of them in under the function name.`)
-    .setColor(`BLUE`)
-    return message.channel.send(embedhelp);    
-  };
-
-
-
-  if(command === "help-levels") {
-    const MessageEmbed = require('discord.js');
-    const embedhelp = new Discord.MessageEmbed()
-    .setTitle(`Support Category`)
-    .addFields(
-      { name: `💾 Rank`, value: `!rank [user/none]`, inline: true },
-      { name: `🎩 Leaderboard`, value: `!lb / !leaderboard`, inline: true },
-      { name: `✅ Add XP`, value: `!addxp [user] [amount]`, inline: true },
-      { name: `❌ Remove XP`, value: `!rmvxp [user] [amount]`, inline: true },
-      { name: `✅ Set Level`, value: `!setlvl [user] [level]`, inline: true },
-      { name: `👍🏼 More Soon`, value: `Nothing here.`, inline: true }
-    )
-    .setDescription(`Here are all the level commands for the bot. The usage of them in under the function name.`)
-    .setColor(`PURPLE`)
-    return message.channel.send(embedhelp);    
-  };
-
-
-
-
-  //Status
-  if(command === "status") {
-    if(Math.round(bot.ws.ping) <= 150) {
-    const MessageEmbed = require('discord.js');
-    const embedstat1 = new Discord.MessageEmbed()
-    .setTitle(`🟢 The bot is fully operational!`)
-    .setDescription(`You will not experience any problems with the bot!`)
-    .setColor(`GREEN`)
-    return message.channel.send(embedstat1);
-    };
-
-    if(Math.round(bot.ws.ping)>=150 && Math.round(bot.ws.ping)<=250) {
-    const embedstat2 = new Discord.MessageEmbed()
-    .setTitle(`🟡 The bot is operating well!`)
-    .setDescription(`The bot is working but you may have some problems.`)
-    .setColor(`YELLOW`)
-    return message.channel.send(embedstat2);
-    };
-
-    if(Math.round(bot.ws.ping) >= 250) {
-      const embedstat2 = new Discord.MessageEmbed()
-      .setTitle(`🔴 The bot is not operating so well!`)
-      .setDescription(`The bot will be hard to use and you will experience problems.`)
-      .setColor(`#FF0000`)
-      return message.channel.send(embedstat2);
-      };
-  };
-
-
-
-
-
-  //Ping
-  if(command === "ping") {
-    const MessageEmbed = require('discord.js');
-    let ping = message.createdTimestamp - message.createdTimestamp
-            const embedping = new Discord.MessageEmbed()
-              .setColor("GREEN")
-              .setDescription(`<:hourglass_flowing_sand:699128011743690794> ${ping} Delay\n\n💓 ${Math.round(bot.ws.ping)} Ping`)
-            return message.channel.send(embedping);
-  };
-  
-
-
-
-  //Meme
-  if(command === "meme") {
-    const MessageEmbed = require('discord.js');
-    const randomPuppy = require("random-puppy");
-    const subReddits = ["dankmeme", "meme", "me_irl"];
-    const random = subReddits[Math.floor(Math.random() * subReddits.length)];
-    const img = await randomPuppy(random);
-
-    const embed = new Discord.MessageEmbed()
-    .setColor(`RANDOM`)
-    .setImage(img)
-    .setURL(`https://reddit.com/r/${random}`)
-    message.channel.send(embed);
-  };
-
-
-
-
-  //Avatar
-  if(command === "avatar") {
-    const MessageEmbed = require('discord.js');
-    const member = message.mentions.users.first() || message.author;
-
-    const embed = new Discord.MessageEmbed()
-    .setTitle(`${member.username}'s Avatar Pic`)
-    .setImage(`${member.displayAvatarURL({dynamic: true, size: 4096})}`)
-    .setColor(`BLUE`)
-    .setTimestamp()
-    message.channel.send(embed);
-  };
-
-
-
-
-  //Ph Comment
-  if(command === "phcom" || command === "phcomment") {
-    const MessageEmbed = require('discord.js');
-    const fetch = require("node-fetch");
-    const member = message.mentions.users.first();
-
-
-    if(!member){
-      const com = args.slice(0).join(" ");
-
-      if(!com){
-        const eembed = new Discord.MessageEmbed()
-        .setTitle(`:no_entry: Error!`)
-        .setDescription(`Oops. You need to specify a comment.`)
-        .setColor(`#FF0000`)
-        .setTimestamp()
-        return message.channel.send(eembed);
-      }
-
-      let res = await fetch(encodeURI(`https://nekobot.xyz/api/imagegen?type=phcomment&username=${message.author.username}&image=${message.author.displayAvatarURL({ format: "png", size: 512 })}&text=${com}`));
-      let json = await res.json();
-      let attachment = new Discord.MessageAttachment(json.message, "phcomment.png");
-      message.channel.send(attachment);
-    } else{
-      const com = args.slice(1).join(" ");
-
-      if(!com){
-        const eembed = new Discord.MessageEmbed()
-        .setTitle(`:no_entry: Error!`)
-        .setDescription(`Oops. You need to specify a comment.`)
-        .setColor(`#FF0000`)
-        .setTimestamp()
-        return message.channel.send(eembed);
-      }
-
-      let res = await fetch(encodeURI(`https://nekobot.xyz/api/imagegen?type=phcomment&username=${member.username}&image=${member.displayAvatarURL({ format: "png", size: 512 })}&text=${com}`));
-      let json = await res.json();
-      let attachment = new Discord.MessageAttachment(json.message, "phcomment.png");
-      message.channel.send(attachment);
-    }};
-
-
-
-
-  //Calculate
-  if(command === "calculate") {
-    const MessageEmbed = require('discord.js');
-    const math = require('mathjs');
-    const calc = args.slice(0).join(" ");
-
-    if(!calc){
-      const eembed = new Discord.MessageEmbed()
-      .setTitle(`:no_entry: Error!`)
-      .setDescription(`Oops. You need to specify a calculation.`)
-      .setColor(`#FF0000`)
-      .setTimestamp()
-      return message.channel.send(eembed);
-    }
-    
-    let result = math.evaluate(args.join(" ").replace(/[x]/gi, "*").replace(/[,]/g, ".").replace(/[÷]/gi, "/"));
-
-    let embed = new Discord.MessageEmbed()
-    .setColor("GREEN")
-    .setAuthor(`${bot.user.username} Calculator`, message.author.displayAvatarURL({ dynamic: true }))
-    .addField("**Operation**", `\`\`\`Js\n${args.join("").replace(/[x]/gi, "*").replace(/[,]/g, ".").replace(/[÷]/gi, "/")}\`\`\``)
-    .addField("**Result**", `\`\`\`Js\n${result}\`\`\``)
-    .setTimestamp()
-    message.channel.send(embed);
-  };
-
-
-
-
-  //Motivate
-  if(command === "motivational" || command === "motivate") {
-    const MessageEmbed = require('discord.js');
-    const jsonQuotes = require('./motivational.json')
-    const member = message.mentions.users.first() || message.author;
-    const randomQuote = jsonQuotes.quotes[Math.floor((Math.random() * jsonQuotes.quotes.length))];
-
-    const quoteEmbed = new Discord.MessageEmbed()
-      .setTitle(randomQuote.author)
-      .setDescription(randomQuote.text)
-      .setColor('GREEN')
-      .setFooter(member.tag, member.displayAvatarURL())
-      .setTimestamp()
-      return message.channel.send(quoteEmbed);
-  };
-
-
-
-
-  //Urban Disctionary
-  if(command === "urban" || command === "urbandictionary") {
-    const MessageEmbed = require('discord.js');
-    const urban = require('relevant-urban');
-    const search = args.slice(0).join(" ");
-    let image = "http://cdn.marketplaceimages.windowsphone.com/v8/images/5c942bfe-6c90-45b0-8cd7-1f2129c6e319?imageType=ws_icon_medium";
-
-    if(!search){
-      const embed = new Discord.MessageEmbed()
-      .setTitle(`:no_entry: Error!`)
-      .setDescription(`Oops. You need to enter something to search.`)
-      .setColor(`#FF0000`)
-      .setTimestamp()
-      return message.channel.send(embed);
-    }
-
-    let res = await urban(args.join(' '))
-
-    if (!res) {
-      const embed = new Discord.MessageEmbed()
-      .setTitle(`:no_entry: Error!`)
-      .setDescription(`Oops. No results found for this topic.`)
-      .setColor(`#FF0000`)
-      .setTimestamp()
-      return message.channel.send(embed);
-    };
-
-    let { word, urbanURL, definition, example, thumbsUp, thumbsDown, author } = res;
-
-    const uembed = new Discord.MessageEmbed()
-    .setColor("GREEN")
-    .setAuthor(`Searched Word - ${word}`)
-    .setThumbnail(image)
-    .setDescription(`**Defintion:**\n*${definition || "No definition"}*\n\n**Example:**\n${example || "No Example"}`)
-    .addField('**Rating:**', `**\`Upvotes: ${thumbsUp} | Downvotes: ${thumbsDown}\`**`)
-    .addField("**Link**",  `[link to ${word}](${urbanURL})`)
-    .addField("**Author:**", `${author || "unknown"}`)
-    .setFooter(message.guild.name, message.guild.iconURL())
-    .setTimestamp()
-    message.channel.send(uembed)
-  };
-
-
-
-
-  //Say
-  if(command === "say") {
-    const MessageEmbed = require('discord.js');
-    const msg = args.slice(0).join(" ");
-
-  if(!msg) {
-    const sembed = new Discord.MessageEmbed()
-    .setTitle(`:no_entry: Error!`)
-    .setDescription(`Oops. You need to enter some text.`)
-    .setColor(`#FF0000`)
-    .setTimestamp()
-    return message.channel.send(sembed);
-  } else {
-    const rembed = new Discord.MessageEmbed()
-    .setTitle(`Saying Something!`)
-    .setDescription(`${msg}`)
-    .setColor(`GREEN`)
-    .setTimestamp()
-    message.channel.send(rembed);
-  }};
-
-
-
-  //Coin Flip
-  if(command === "coinflip") {
-    const MessageEmbed = require('discord.js');
-    const n = Math.floor(Math.random() * 2);
-
-  if(n === 1){
-    const sembed = new Discord.MessageEmbed()
-    .setTitle(`Coinflip!`)
-    .setDescription(`${message.author} **Flipped Heads!**`)
-    .setThumbnail(`https://imgur.com/CnlkCrw.png`)
-    .setColor(`GREEN`)
-    .setTimestamp()
-    return message.channel.send(sembed);
-  } else {
-    const sembed = new Discord.MessageEmbed()
-    .setTitle(`Coinflip!`)
-    .setDescription(`${message.author} **Flipped Tails!**`)
-    .setThumbnail(`https://imgur.com/ZhPIukF.png`)
-    .setColor(`GREEN`)
-    .setTimestamp()
-    return message.channel.send(sembed);
-  }};
-
-
-
-  //Roast
-  if(command === "roast") {
-    const MessageEmbed = require('discord.js');
-    const roasts = require('./roast.json');
-    const member = message.mentions.users.first();
-    const roast = roasts.roast[Math.floor((Math.random() * roasts.roast.length))];
-
-  if(!member) {
-    const sembed = new Discord.MessageEmbed()
-    .setTitle(`:no_entry: Error!`)
-    .setDescription(`Oops. You can not roast yourself.`)
-    .setColor(`#FF0000`)
-    .setTimestamp()
-    return message.channel.send(sembed);
-  }
-
-  if(member) {
-    const rembed = new Discord.MessageEmbed()
-    .setTitle(`Roasting Someone!`)
-    .setDescription(`${roast}`)
-    .setFooter(`Roasted ${member.tag}`)
-    .setColor(`RANDOM`)
-    .setTimestamp()
-    return message.channel.send(rembed);
-  }};
-
-
-
-  //Rank
-  if(command === "rank") {
-    const target2 = message.mentions.users.first() || message.author;
-    const user = await Levels.fetch(target2.id, message.guild.id);
-    const MessageEmbed = require('discord.js');
-
-    if(!user){
-      const embed = new Discord.MessageEmbed()
-      .setTitle(`:no_entry: Error!`)
-      .setDescription(`Oops. It looks like you don't have any XP.`)
-      .setColor(`#FF0000`)
-      .setTimestamp()
-      return message.channel.send(embed)
-    };
-
-    const embed = new Discord.MessageEmbed()
-          .setTitle(`${target2.tag}'s Level Stats`)
-          .setColor(`BLUE`)
-          .addFields(
-            { name: `Name`, value: `${target2}`, inline: true},
-            { name: `Level`, value: `${user.level}/100`, inline: true },
-            { name: `XP`, value: `${user.xp}`, inline: true} )
-          .setThumbnail(`${target2.displayAvatarURL({dynamic: true})}`)
-          .setFooter(message.guild.name, message.guild.iconURL())
-          .setTimestamp()
-          message.channel.send(embed);
-  };
-
-
-
-  //Add XP
-  if(command === "addxp") {
-    const target = message.mentions.users.first();
-    const user = await Levels.fetch(target.id, message.guild.id);
-    const addxp = args.slice(1).join(" ");
-
-    if (!message.member.hasPermission('ADMINISTRATOR')){
-      const embed = new Discord.MessageEmbed()
-      .setTitle(`:no_entry: Error!`)
-      .setDescription(`Oops. It looks like you don't have permission to do that.`)
-      .setColor(`#FF0000`)
-      .setTimestamp()
-      return message.channel.send(embed);
-    };
-
-    if(!user) {
-      const embed = new Discord.MessageEmbed()
-      .setTitle(`:no_entry: Error!`)
-      .setDescription(`Oops. It looks like that user is not in the Data Base.`)
-      .setColor(`#FF0000`)
-      .setTimestamp()
-      return message.channel.send(embed);
-    };
-
-    if(!addxp){
-      const embed = new Discord.MessageEmbed()
-      .setTitle(`:no_entry: Error!`)
-      .setDescription(`Oops. You need to specify the XP to add.`)
-      .setColor(`#FF0000`)
-      .setTimestamp()
-      return message.channel.send(embed);
-    };
-
-    if(addxp>100000){
-      const embed = new Discord.MessageEmbed()
-      .setTitle(`:no_entry: Error!`)
-      .setDescription(`Oops. The maximum XP to add is 100000.`)
-      .setColor(`#FF0000`)
-      .setTimestamp()
-      return message.channel.send(embed);
-    };
-
-    Levels.appendXp(message.author.id, message.guild.id, addxp);
-
-    const embed = new Discord.MessageEmbed()
-    .setTitle(`:white_check_mark: Success!`)
-    .setDescription(`Successfully added **${addxp} XP** to ${target}!`)
-    .setColor(`GREEN`)
-    .setTimestamp()
-    return message.channel.send(embed);
-
-  };
-  
-
-
-  //Set Level
-  if(command === "setlevel" || command === "setlvl") {
-    const target = message.mentions.users.first();
-    const user = await Levels.fetch(target.id, message.guild.id);
-    const setlvl = args.slice(1).join(" ");
-
-    if (!message.member.hasPermission('ADMINISTRATOR')){
-      const embed = new Discord.MessageEmbed()
-      .setTitle(`:no_entry: Error!`)
-      .setDescription(`Oops. It looks like you don't have permission to do that.`)
-      .setColor(`#FF0000`)
-      .setTimestamp()
-      return message.channel.send(embed);
-    };
-
-    if(!user) {
-      const embed = new Discord.MessageEmbed()
-      .setTitle(`:no_entry: Error!`)
-      .setDescription(`Oops. It looks like that user is not in the Data Base.`)
-      .setColor(`#FF0000`)
-      .setTimestamp()
-      return message.channel.send(embed);
-    };
-
-    if(!setlvl){
-      const embed = new Discord.MessageEmbed()
-      .setTitle(`:no_entry: Error!`)
-      .setDescription(`Oops. You need to specify the Level to set.`)
-      .setColor(`#FF0000`)
-      .setTimestamp()
-      return message.channel.send(embed);
-    };
-
-    if(setlvl>100){
-      const embed = new Discord.MessageEmbed()
-      .setTitle(`:no_entry: Error!`)
-      .setDescription(`Oops. The maximum level to add is 100.`)
-      .setColor(`#FF0000`)
-      .setTimestamp()
-      return message.channel.send(embed);
-    };
-
-    Levels.setLevel(message.author.id, message.guild.id, setlvl);
-
-    const embed5 = new Discord.MessageEmbed()
-    .setTitle(`:white_check_mark: Success!`)
-    .setDescription(`Successfully set **Level ${setlvl}** to ${target}!`)
-    .setColor(`GREEN`)
-    .setTimestamp()
-    return message.channel.send(embed5);
-
-  };
-
-
-
-  //Subsctract XP
-  if(command === "removxp" || command === "substractxp" || command === "rmvxp") {
-    const target = message.mentions.users.first();
-    const user = await Levels.fetch(target.id, message.guild.id);
-    const rmvxp = args.slice(1).join(" ");
-
-    if (!message.member.hasPermission('ADMINISTRATOR')){
-      const embed = new Discord.MessageEmbed()
-      .setTitle(`:no_entry: Error!`)
-      .setDescription(`Oops. It looks like you don't have permission to do that.`)
-      .setColor(`#FF0000`)
-      .setTimestamp()
-      return message.channel.send(embed);
-    };
-
-    if(!user) {
-      const embed = new Discord.MessageEmbed()
-      .setTitle(`:no_entry: Error!`)
-      .setDescription(`Oops. It looks like that user is not in the Data Base.`)
-      .setColor(`#FF0000`)
-      .setTimestamp()
-      return message.channel.send(embed);
-    };
-
-    if(!rmvxp){
-      const embed = new Discord.MessageEmbed()
-      .setTitle(`:no_entry: Error!`)
-      .setDescription(`Oops. You need to specify the XP to remove.`)
-      .setColor(`#FF0000`)
-      .setTimestamp()
-      return message.channel.send(embed);
-    };
-
-    if(rmvxp>100000){
-      const embed = new Discord.MessageEmbed()
-      .setTitle(`:no_entry: Error!`)
-      .setDescription(`Oops. The maximum XP to remove is 100000.`)
-      .setColor(`#FF0000`)
-      .setTimestamp()
-      return message.channel.send(embed);
-    };
-
-    Levels.subtractXp(message.author.id, message.guild.id, rmvxp);
-
-    const embed = new Discord.MessageEmbed()
-    .setTitle(`:white_check_mark: Success!`)
-    .setDescription(`Successfully removed **${rmvxp} XP** from ${target}!`)
-    .setColor(`GREEN`)
-    .setTimestamp()
-    return message.channel.send(embed);
-
-  };
-
-
-
-  //Leaderboard
-  if(command === "leaderboard" || command === "lb") {
-      const rawLeaderboard = await Levels.fetchLeaderboard(message.guild.id, 5);
-      const MessageEmbed = require('discord.js');
-
-      if (rawLeaderboard.length < 1) {
-        const embed6 = new Discord.MessageEmbed()
-        .setTitle(`:no_entry: Error!`)
-        .setDescription(`Oops. It looks like nobody's on the leaderboard yet.`)
-        .setColor(`#FF0000`)
-        .setTimestamp()
-        return message.channel.send(embed6);
-      };
-
-      const leaderboard = await Levels.computeLeaderboard(bot, rawLeaderboard, true); 
-
-      const embed7 = new Discord.MessageEmbed()
-      .setTitle(`Server Leaderboard:`)
-      .setDescription(leaderboard.map(e => `**${e.position}.** ${e.username}  **|  Level ${e.level}**`))
-      .setColor(`PURPLE`)
-      .setTimestamp()
-      message.channel.send(embed7);
-
-  };
-
-
-
-
-  if(command === "owner-activate") {
-    const MessageEmbed = require('discord.js');
-
-  if(!message.author.id === "324609918248157184"){
-    const sembed = new Discord.MessageEmbed()
-    .setTitle(`:no_entry: Error!`)
-    .setDescription(`Oops. Only the bot owner can use this command!`)
-    .setColor(`#FF0000`)
-    .setTimestamp()
-    return message.channel.send(sembed);
-  }
-
-  const sembed = new Discord.MessageEmbed()
-    .setTitle(`:white_check_mark: Success!`)
-    .setDescription(`Bot Owner Commands Activated!`)
-    .setColor(`GREEN`)
-    .setFooter(message.guild.name, message.guild.iconURL())
-    .setTimestamp()
-    return message.channel.send(sembed);
-
-};
-
-  if(command === "owner-ban") {
-    const MessageEmbed = require('discord.js');
-    const user = message.mentions.users.first();
-    const reason = args.slice(1).join(" ");
-
-  if(!message.author.id === "324609918248157184"){
-    const sembed = new Discord.MessageEmbed()
-    .setTitle(`:no_entry: Error!`)
-    .setDescription(`Oops. Only the bot owner can use this command!`)
-    .setColor(`#FF0000`)
-    .setTimestamp()
-    return message.channel.send(sembed);
-  }
-
-  const embed = new Discord.MessageEmbed()
-  .setTitle(`You Have Been Banned!`)
-  .setDescription(`You have been permanently banned from **${message.guild.name}**!\n⠀⠀⠀`)
-  .addFields(
-    { name: `Moderator`, value: `Bot Owner`, inline: true},
-    { name: `Reason`, value: `${reason}`, inline: true},
-    { name: `Duration`, value: `Permanent`, inline: true})
-    .setThumbnail(message.guild.iconURL())
-    .setFooter(message.guild.name, message.guild.iconURL())
-    .setColor(`#FF0000`)
-    .setTimestamp()
-    user.send(embed). then(() => message.guild.members.ban(user, {reason: reason }))
-
-
-    const embed2 = new Discord.MessageEmbed()
-    .setTitle(`Member Permanently Banned - ${user.tag}`)
-    .setDescription(`⠀⠀⠀⠀⠀⠀⠀`)
-    .addFields(
-      { name: `Moderator`, value: `Bot Owner`, inline: true},
-      { name: `Reason`, value: `${reason}`, inline: true},
-      { name: `Duration`, value: `Permanent`, inline: true})
-      .setColor(`#FF0000`)
-      .setThumbnail(user.displayAvatarURL())
-    message.channel.send(embed2);
-
-};
-
-
-if(command === "owner-tempban") {
-  const MessageEmbed = require('discord.js');
-  const user = message.mentions.users.first();
-  const reason = args.slice(1).join(" ");
-
-if(!message.author.id === "324609918248157184"){
-  const sembed = new Discord.MessageEmbed()
-  .setTitle(`:no_entry: Error!`)
-  .setDescription(`Oops. Only the bot owner can use this command!`)
-  .setColor(`#FF0000`)
-  .setTimestamp()
-  return message.channel.send(sembed);
-}
-
-const embedr = new Discord.MessageEmbed()
-.setTitle(`You Have Been Banned!`)
-.setDescription(`You have been temporary banned from **${message.guild.name}**!\n⠀⠀⠀`)
-.addFields(
-  { name: `Moderator`, value: `Bot Owner`, inline: true},
-  { name: `Reason`, value: `${reason}`, inline: true},
-  { name: `Duration`, value: `14 Days`, inline: true})
-  .setThumbnail(message.guild.iconURL())
-  .setFooter(message.guild.name, message.guild.iconURL())
-  .setColor(`#FF0000`)
-  .setTimestamp()
-  user.send(embedr). then(() => message.guild.members.ban(user, {days: 14, reason: reason }))
-
-
-  const embedq = new Discord.MessageEmbed()
-  .setTitle(`Member Temporary Banned - ${user.tag}`)
-  .setDescription(`⠀⠀⠀⠀⠀`)
-  .addFields(
-    { name: `Moderator`, value: `Bot Owner`, inline: true},
-    { name: `Reason`, value: `${reason}`, inline: true},
-    { name: `Duration`, value: `14 Days`, inline: true})
-    .setColor(`#FF0000`)
-    .setThumbnail(user.displayAvatarURL())
-  message.channel.send(embedq);
-
-};
-
-
-
-bot.login(process.env.token);
+const { Client, MessageAttachment, Collection, MessageEmbed } = require('discord.js');
+const { PREFIX, TOKEN, DBL_API_KEY } = require('./config');
+const bot = new Client({ disableMentions: 'everyone' });
+const DBL = require('dblapi.js');
+const dbl = new DBL(DBL_API_KEY)
+const fs = require("fs");
+const db = require('quick.db');
+const jimp = require('jimp');
+
+bot.phone = new Collection();
+bot.commands = new Collection();
+bot.aliases = new Collection();
+
+["aliases", "commands"].forEach(x => bot[x] = new Collection());
+["console", "command", "event"].forEach(x => require(`./handler/${x}`)(bot));
+
+bot.categories = fs.readdirSync("./commands/");
+
+["command"].forEach(handler => {
+    require(`./handler/${handler}`)(bot);
 });
+bot.on('ready', () => {
+    setInterval(() => {
+        dbl.postStats(bot.guilds.cache.size);
+    }, 1800000);
+});
+
+bot.on('message', async message => {
+    let prefix;
+    if (message.author.bot || message.channel.type === "dm") return;
+        try {
+            let fetched = await db.fetch(`prefix_${message.guild.id}`);
+            if (fetched == null) {
+                prefix = PREFIX
+            } else {
+                prefix = fetched
+            }
+        } catch (e) {
+            console.log(e)
+    };
+  
+    if (message.author.bot) return;
+    if (message.channel.type === "dm") return;
+
+    let messageFetch = db.fetch(`guildMessages_${message.guild.id}`)
+    if (messageFetch === null) return;
+
+    db.add(`messages_${message.guild.id}_${message.author.id}`, 1)
+    let messagefetch = db.fetch(`messages_${message.guild.id}_${message.author.id}`)
+
+    let messages;
+    if (messagefetch == 0) messages = 0; //Level 0
+    else if (messagefetch == 100) messages = 100; // Level 1
+    else if (messagefetch == 200) messages = 200; // Level 2
+    else if (messagefetch == 300) messages = 300; // Level 3
+    else if (messagefetch == 400) messages = 400; // Level 4
+    else if (messagefetch == 500) messages = 500; // Level 5
+    else if (messagefetch == 600) messages = 600; // Level 6
+    else if (messagefetch == 700) messages = 700; // Level 7
+    else if (messagefetch == 800) messages = 800; // Level 8
+    else if (messagefetch == 900) messages = 900; // Level 9
+    else if (messagefetch == 1000) messages = 1000; // Level 10
+    else if (messagefetch == 1100) messages = 1100; // Level 11
+    else if (messagefetch == 1200) messages = 1200; // Level 12
+    else if (messagefetch == 1300) messages = 1300; // Level 13
+    else if (messagefetch == 1400) messages = 1400; // Level 14
+    else if (messagefetch == 1500) messages = 1500; // Level 15
+    else if (messagefetch == 1600) messages = 1600; // Level 16
+    else if (messagefetch == 1700) messages = 1700; // Level 17
+    else if (messagefetch == 1800) messages = 1800; // Level 18
+    else if (messagefetch == 1900) messages = 1900; // Level 19
+    else if (messagefetch == 2000) messages = 2000; // Level 20
+    else if (messagefetch == 2100) messages = 2100; // Level 21
+    else if (messagefetch == 2200) messages = 2200; // Level 22
+    else if (messagefetch == 2300) messages = 2300; // Level 23
+    else if (messagefetch == 2400) messages = 2400; // Level 24
+    else if (messagefetch == 2500) messages = 2500; // Level 25
+    else if (messagefetch == 2600) messages = 2600; // Level 26
+    else if (messagefetch == 2700) messages = 2700; // Level 27
+    else if (messagefetch == 2800) messages = 2800; // Level 28
+    else if (messagefetch == 2900) messages = 2900; // Level 29
+    else if (messagefetch == 3000) messages = 3000; // Level 30
+    else if (messagefetch == 3100) messages = 3100; // Level 31
+    else if (messagefetch == 3200) messages = 3200; // Level 32
+    else if (messagefetch == 3300) messages = 3300; // Level 33
+    else if (messagefetch == 3400) messages = 3400; // Level 34
+    else if (messagefetch == 3500) messages = 3500; // Level 35
+    else if (messagefetch == 3600) messages = 3600; // Level 36
+    else if (messagefetch == 3700) messages = 3700; // Level 37
+    else if (messagefetch == 3800) messages = 3800; // Level 38
+    else if (messagefetch == 3900) messages = 3900; // Level 39
+    else if (messagefetch == 4000) messages = 4000; // Level 40
+    else if (messagefetch == 4100) messages = 4100; // Level 41
+    else if (messagefetch == 4200) messages = 4200; // Level 42
+    else if (messagefetch == 4300) messages = 4300; // Level 43
+    else if (messagefetch == 4400) messages = 4400; // Level 44
+    else if (messagefetch == 4500) messages = 4500; // Level 45
+    else if (messagefetch == 4600) messages = 4600; // Level 46
+    else if (messagefetch == 4700) messages = 4700; // Level 47
+    else if (messagefetch == 4800) messages = 4800; // Level 48
+    else if (messagefetch == 4900) messages = 4900; // Level 49
+    else if (messagefetch == 5000) messages = 5000; // level 50
+
+    if (!isNaN(messages)) {
+        db.add(`level_${message.guild.id}_${message.author.id}`, 1)
+        let levelfetch = db.fetch(`level_${message.guild.id}_${message.author.id}`)
+
+        let levelembed = new MessageEmbed()
+            .setColor('GREEN')
+            .setDescription(`**${message.author}, You Have Leveled Up To Level ${levelfetch}**`)
+            .setFooter(`${prefix}disablexp To Disable Level Up Messages`)
+        message.channel.send(levelembed);
+    };
+});
+
+bot.on('message', async message => {
+    let prefix;
+        try {
+            let fetched = await db.fetch(`prefix_${message.guild.id}`);
+            if (fetched == null) {
+                prefix = PREFIX
+            } else {
+                prefix = fetched
+            }
+        } catch (e) {
+            console.log(e)
+    };
+    try {
+        if (message.mentions.has(bot.user) && !message.mentions.has(message.guild.id)) {
+            return message.channel.send(`**My Prefix In This Server is - \`${prefix}\`**`)
+        }
+    } catch {
+        return;
+    };
+});
+
+bot.on('message', async message => {
+  
+    try {
+        const hasText = Boolean(message.content);
+        const hasImage = message.attachments.size !== 0;
+        const hasEmbed = message.embeds.length !== 0;
+        if (message.author.bot || (!hasText && !hasImage && !hasEmbed)) return;
+        const origin = bot.phone.find(call => call.origin.id === message.channel.id);
+        const recipient = bot.phone.find(call => call.recipient.id === message.channel.id);
+        if (!origin && !recipient) return;
+        const call = origin || recipient;
+        if (!call.active) return;
+        await call.send(origin ? call.recipient : call.origin, message, hasText, hasImage, hasEmbed);
+    } catch {
+        return;
+    };
+});
+
+bot.on('guildMemberAdd', async member => {
+
+    let wChan = db.fetch(`welcome_${member.guild.id}`)
+
+    if (wChan == null) return;
+
+    if (!wChan) return;
+
+    let font64 = await jimp.loadFont(jimp.FONT_SANS_64_WHITE)
+    let bfont64 = await jimp.loadFont(jimp.FONT_SANS_64_BLACK)
+    let mask = await jimp.read('https://i.imgur.com/552kzaW.png')
+    let welcome = await jimp.read('https://t.wallpaperweb.org/wallpaper/nature/1920x1080/greenroad1920x1080wallpaper3774.jpg')
+
+    jimp.read(member.user.displayAvatarURL({ format: 'png' })).then(avatar => {
+        avatar.resize(200, 200)
+        mask.resize(200, 200)
+        avatar.mask(mask)
+        welcome.resize(1000, 300)
+
+        welcome.print(font64, 265, 55, `Welcome ${member.user.username}`)
+        welcome.print(bfont64, 265, 125, `To ${member.guild.name}`)
+        welcome.print(font64, 265, 195, `There are now ${member.guild.memberCount} users`)
+        welcome.composite(avatar, 40, 55).write('Welcome2.png')
+        try {
+            member.guild.channels.cache.get(wChan).send(``, { files: ["Welcome2.png"] })
+        } catch (e) {
+          
+        }
+    })
+        var r = member.guild.roles.cache.find(r => r.name === 'Community');
+        if (!r) return;
+        member.roles.add(r)
+
+});
+
+const express = require("express");
+const app = express();
+
+const dreams = [
+  "Find and count some sheep",
+  "Climb a really tall mountain",
+  "Wash the dishes"
+];
+app.use(express.static("public"));
+
+app.get("/", (request, response) => {
+  response.sendFile(__dirname + "/views/index.html");
+});
+
+app.get("/dreams", (request, response) => {
+  response.json(dreams);
+});
+
+const listener = app.listen(process.env.PORT, () => {
+  console.log("Your app is listening on port " + listener.address().port);
+});
+
+bot.login(TOKEN);
