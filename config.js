@@ -1,5 +1,3 @@
-exports.TOKEN = 'ODcxMDY0NzExNzU4NzUzODAy.YQV4Og.ar2J9f7qPFclMHVDB5AMKWa_2Ig';
-
 exports.PREFIX = '?';
 
 exports.news_API = '0469d4c2fe8b48d49614a59e87d4c030';
